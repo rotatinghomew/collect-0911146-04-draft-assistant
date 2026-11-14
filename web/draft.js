@@ -78,4 +78,6 @@ document.querySelector('#login').addEventListener('submit', async event => {
 document.querySelector('#reverse').addEventListener('click', () => {current.lines.reverse(); render();});
 document.querySelector('#refresh').addEventListener('click', loadDraft);
 document.querySelector('#submit').addEventListener('click', async () => {await fetch('/submit', {method: 'POST'}); notice.textContent = '已提交';});
-loadDraft();
+fetch('/session').then(response => response.json()).then(session => {
+  if (session.authenticated) return loadDraft();
+});

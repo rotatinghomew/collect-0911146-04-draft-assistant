@@ -1,8 +1,11 @@
+import argparse
 import json
+import os
 from pathlib import Path
+import signal
 import threading
 from decimal import Decimal, InvalidOperation
-from local_http import Reply
+from local_http import Reply, serve
 
 
 class Portal:
@@ -47,6 +50,8 @@ class Portal:
             return Reply.json({'ok': True}, headers={'Set-Cookie': 'session=local-editor; HttpOnly; SameSite=Strict; Path=/'})
         if path == '/':
             return Reply(200, Path('web/index.html').read_bytes(), {'Content-Type': 'text/html; charset=utf-8'})
+        if path == '/session' and method == 'GET':
+            return Reply.json({'authenticated': 'session=local-editor' in headers.get('Cookie', '')})
         if 'session=local-editor' not in headers.get('Cookie', ''):
             return Reply.json({'error': '需要登录'}, 401)
         if path == '/state':
@@ -57,3 +62,20 @@ class Portal:
             self.submissions += 1
             return Reply.json({'status': 'submitted'})
         return Reply(404)
+
+
+def main():
+    parser = argparse.ArgumentParser(description='采购草稿本地协作门户')
+    parser.add_argument('--host', default=os.environ.get('HOST', '127.0.0.1'))
+    parser.add_argument('--port', type=int, default=int(os.environ.get('PORT', '8080')))
+    arguments = parser.parse_args()
+    stopped = threading.Event()
+    signal.signal(signal.SIGTERM, lambda signum, frame: stopped.set())
+    signal.signal(signal.SIGINT, lambda signum, frame: stopped.set())
+    with serve(Portal(), host=arguments.host, port=arguments.port) as base:
+        print('采购草稿门户：' + base, flush=True)
+        stopped.wait()
+
+
+if __name__ == '__main__':
+    main()

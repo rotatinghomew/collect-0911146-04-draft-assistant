@@ -20,7 +20,7 @@ class Reply:
 
 
 @contextmanager
-def serve(site):
+def serve(site, host='127.0.0.1', port=0):
     class Handler(BaseHTTPRequestHandler):
         def handle_request(self):
             length = int(self.headers.get('Content-Length', 0))
@@ -40,7 +40,7 @@ def serve(site):
         def log_message(self, *args):
             return None
 
-    server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    server = ThreadingHTTPServer((host, port), Handler)
     worker = threading.Thread(target=server.serve_forever, daemon=True)
     worker.start()
     try:

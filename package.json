@@ -1,0 +1,11 @@
+{
+  "name": "procurement-draft-portal",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local procurement draft portal with a Python HTTP service",
+  "scripts": {
+    "start": "python3 portal.py",
+    "test": "python3 -m unittest discover -s tests -v",
+    "build": "python3 -m compileall -q ."
+  }
+}
